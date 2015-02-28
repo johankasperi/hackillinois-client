@@ -1,15 +1,11 @@
-/*
- * Socket io
- */
-
- var socket = io.connect('https://dry-brook-1207.herokuapp.com/');
+var backendUrl = 'https://dry-brook-1207.herokuapp.com/'
 
 /*
  * Right-click function to create new post-it
  */
-
-// Contectmenus listeners and functions
 var clickedElement = null;
+
+// Contextmenus listeners and functions
 chrome.runtime.onInstalled.addListener(function() {
   var context = "all";
   var title = "Comment this";
@@ -24,6 +20,7 @@ chrome.contextMenus.onClicked.addListener(onClickHandler);
 
 function onClickHandler(info, tab) {
   chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+    console.log("hej")
     createPostIt({
       dom: clickedElement,
       url: tabs[0].url,
@@ -51,9 +48,6 @@ function sendPostIt(domElement) {
 // Talk with the api
 
 function createPostIt(data) {
-  socket.emit("CreatePostIt", data);
+  console.log("create post it")
+  $.post(backendUrl+"api/post-it/", data);
 }
-
-socket.on("GetPostIt", function(data) {
-  sendPostIt(data.domElement);
-})

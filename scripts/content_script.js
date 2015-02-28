@@ -1,24 +1,32 @@
+var backendUrl = "https://dry-brook-1207.herokuapp.com/"
+
 /*
  * Socket io
  */
 
- var socket = io.connect('https://dry-brook-1207.herokuapp.com/');
+ var socket = io.connect(backendUrl);
+
+// Listeners
+socket.join(window.location.href);
+socket.on("NewPostItCreated", function(data) {
+	createPostIt(data.newPostIt.domElement, data.postId);
+})
+socket.on("NewCommentCreated", function(data) {
+	createComment(data.newComment, data.postId);
+})
 
 /*
  * Get all postits when entering url
  */
 
-$(document).ready(function() {
+$(window).load(function() {
 	console.log(window.location.href);
-	socket.emit("GetAllPostItUrl", { url: window.location.href });
+	$.get(backendUrl+"api/post-it", { url: window.location.href }, function(data) {
+		$.each(data, function(i, obj) {
+			createPostIt(obj.domElement);
+		});
+	});
 });
-
-socket.on("GetAllPostItUrl", function(data) {
-	console.log(data);
-	$.each(data, function(i, obj) {
-		createPostIt(obj.domElement);
-	})
-})
 
 
 /*
@@ -26,16 +34,14 @@ socket.on("GetAllPostItUrl", function(data) {
  */
 
 var posts = []; // array to save all postits at certain url
-var id = 0; // id to increment for each postit and certain url
 
 // Create the postit at the position of the clicked element
-function createPostIt(domElement) {
+function createPostIt(domElement, id) {
 	var post = {
   		id: id,
   		domElement: domElement,
   	};
   	posts.push(post);
-  	id++;
 	console.log(post.domElement);
 	var offset = $(post.domElement).offset();
 	var wrapper = $("<div></div>").attr("id", "comment-plugin-"+post.id).addClass("comment-plugin").css({
@@ -67,6 +73,14 @@ $(window).resize(function() {
 })
 
 /*
+ * Comment handling
+ */
+
+function createComment(x,y) {
+	
+}
+
+/*
  * Right-click events
  */
 $(document).on("contextmenu", function(e) {
@@ -95,6 +109,6 @@ function getDom(element, domElement, callback) {
  */
 chrome.runtime.onMessage.addListener(function(message) {
   if(message.type == "create-postit") {
-    createPostIt(message.domElement);
+    //createPostIt(message.domElement);
   }
 })
