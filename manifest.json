@@ -1,0 +1,17 @@
+{
+  "name": "Comment this",
+  "description": "Comment anything on the Internet.",
+  "version": "0.0.1",
+  "permissions": ["contextMenus"],
+  "background": {
+    "persistent": false,
+    "scripts": ["scripts/socket.io-1.3.4.js", "scripts/background.js"]
+  },
+  "content_scripts": [{
+    "matches":["http://*/*","https://*/*"],
+    "css": ["css/style.css"],
+    "js": ["scripts/jquery.min.js", "scripts/rightclick.js", "scripts/create_postit.js"],
+    "run_at": "document_end"
+  }],
+  "manifest_version": 2
+}
