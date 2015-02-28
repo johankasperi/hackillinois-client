@@ -2,7 +2,7 @@
  * Socket io
  */
 
- var socket = io.connect('http://localhost:3000/');
+ var socket = io.connect('https://dry-brook-1207.herokuapp.com/');
 
 /*
  * Right-click function to create new post-it
@@ -23,24 +23,26 @@ chrome.runtime.onInstalled.addListener(function() {
 chrome.contextMenus.onClicked.addListener(onClickHandler);
 
 function onClickHandler(info, tab) {
-  socket.emit('create post-it', {
-    dom: clickedElement,
-    url: "www.hej.se"
+  chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+    createPostIt({
+      dom: clickedElement,
+      url: tabs[0].url,
+    });
   });
-  sendPostit(clickedElement);
+  sendPostIt(clickedElement);
 };
 
 // Listen on the right-click event from rightclick.js
 chrome.runtime.onMessage.addListener(function(message) {
   if(message.type == "click") {
-    clickedElement = message.DOMstack;
+    clickedElement = message.domElement;
   }
 })
 
-// Send the new post-it domstack to create_postit.js
-function sendPostit(DOMstack) {
+// Send the new post-it domElement to create_postit.js
+function sendPostIt(domElement) {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, {type: "create-postit", DOMstack: DOMstack}, function(response) {
+    chrome.tabs.sendMessage(tabs[0].id, {type: "create-postit", domElement: domElement}, function(response) {
       console.log(response.farewell);
     });
   });
@@ -48,4 +50,10 @@ function sendPostit(DOMstack) {
 
 // Talk with the api
 
-//$.post("")
+function createPostIt(data) {
+  socket.emit("CreatePostIt", data);
+}
+
+socket.on("GetPostIt", function(data) {
+  sendPostIt(data.domElement);
+})

@@ -13,10 +13,10 @@ $(document).on("contextmenu", function(e) {
 
 function getDom(element, DOMstack, callback) {
 	if($(element).attr("id")) {
-		return callback($(element).prop("tagName").toLowerCase() + "#" + $(element).attr("id") + " " + DOMstack);
+		return callback("#" + $(element).attr("id").split(" ")[0] + " " + DOMstack);
 	}
 	if($(element).attr("class")) {
-		return getDom($(element).parent(), $(element).prop("tagName").toLowerCase() + "." + $(element).attr("class").split(" ").join(".") + " " + DOMstack, callback);
+		return getDom($(element).parent(), "." + $(element).attr("class").split(" ").join(".") + " " + DOMstack, callback);
 	}
 	getDom($(element).parent(), $(element).prop("tagName").toLowerCase() + " " + DOMstack, callback);
 }
