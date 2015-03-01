@@ -5,7 +5,7 @@
   "permissions": ["contextMenus", "tabs"],
   "background": {
     "persistent": false,
-    "scripts": ["scripts/jquery.min.js", "scripts/background.js"]
+    "page": "html/background.html"
   },
   "content_scripts": [{
     "matches":["http://*/*","https://*/*"],
