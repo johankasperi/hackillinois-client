@@ -14,7 +14,7 @@ socket.on("connect", function() {
 		createPostIt(data);
 	})
 	socket.on("NewCommentCreated", function(data) {
-		createComment(data.comment.comment, data.comment.username, data.postId);
+		createComment(data.comment.comment, data.comment.username, data.comment.date, data.postId);
 	})
 })
 
@@ -70,7 +70,7 @@ function createPostIt(post) {
 
 	if(post.post.comments) {
 		$.each(post.post.comments, function(i, comment) {
-			createComment(comment.comment, comment.username, post.id);
+			createComment(comment.comment, comment.username, comment.date, post.id);
 		})
 	}
 }
@@ -90,11 +90,11 @@ $(window).resize(function() {
  * Comment handling
  */
 
-function createComment(comment, user, postId) {
-	console.log("createComment")
+function createComment(comment, user, unix_timestamp, postId) {
 	var comment = $("<div></div>").addClass("comment-row")
-		.append("<span>"+comment+"</span>")
-		.append("<span>"+user+"</span>");
+		.append('<div class="message">'+comment+"</div>")
+		.append('<div class="date">'+$.timeago(new Date(unix_timestamp))+'</div>')
+		.append('<div class="user">'+user+"</div>");
 	console.log($("#comment-plugin-"+postId+" .comment-comments"));
 	$("#comment-plugin-"+postId+" .comment-comments").append(comment);
 }
