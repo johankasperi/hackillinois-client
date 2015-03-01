@@ -14,6 +14,7 @@ socket.on("NewPostItCreated", function(data) {
 	createPostIt(data.newPostIt.domElement, data.postId);
 })
 socket.on("NewCommentCreated", function(data) {
+	console.log("aoid")
 	createComment(data.newComment, data.postId);
 })
 
@@ -22,14 +23,12 @@ socket.on("NewCommentCreated", function(data) {
  */
 
 $(window).load(function() {
-	console.log(window.location.href);
 	$.get(backendUrl+"api/post-it", { url: window.location.href }, function(data) {
 		$.each(data, function(i, obj) {
-			createPostIt(obj.domElement);
+			createPostIt(obj.domElement, obj.id);
 		});
 	});
 });
-
 
 /*
  * Creation of postit
@@ -44,28 +43,41 @@ function createPostIt(domElement, id) {
   		domElement: domElement,
   	};
   	posts.push(post);
-	console.log(post.domElement);
+	
 	var offset = $(post.domElement).offset();
-	var wrapper = $("<div></div>").attr("id", "comment-plugin-"+post.id).addClass("comment-plugin").css({
+	var domId = "comment-plugin-"+post.id;
+	var wrapper = $("<div></div>").attr("id", domId).addClass("comment-plugin").css({
 		position: "absolute",
 		top: offset.top,
 		left: offset.left
 	});
 	var title = $("<div></div>").addClass("comment-title").html("Comment this!");
+	var comments = $("<div></div>").addClass("comment-comments");
 	var formWrapper = $("<div></div>").addClass("comment-formWrap");
 	var form = $("<form></form>").attr("id", "comment-form");
-	var input = $('<input type="text" name="input" placeholder="Write comment here"></input>');
+	var inputComment = $('<input type="text" name="comment" class="input-comment" placeholder="Write comment here"></input>');
+	var inputUser = $('<input type="text" name="user" class="input-user" placeholder="Your name"></input>');
 	var button = $('<button></button>').html("Submit");
-	form.append(input).append(button);
+	
+	form.append(inputComment).append(inputUser).append(button);
 	formWrapper.append(form);
-	wrapper.append(title).append(formWrapper);
+	wrapper.append(title).append(comments).append(formWrapper);
 	$("body").append(wrapper);
+
+	$("#" + domId + " form#comment-form").submit(function(e) {
+		e.preventDefault();
+		var comment = $("#" + domId + " .input-comment").val();
+		$("#" + domId + " .input-comment").val('');
+		var user = $("#" + domId + " .input-user").val();
+		$("#" + domId + " .input-user").val('');
+		createComment(comment, user, post.id);
+		submitComment(comment, user, post.id);
+	});
 }
 
 // Move postits on window resize
 $(window).resize(function() {
 	$.each(posts, function(index, obj) {
-		console.log(obj);
 		var offset = $(obj.domElement).offset();
 		$("#comment-plugin-"+obj.id).css({
 			top: offset.top,
@@ -78,8 +90,21 @@ $(window).resize(function() {
  * Comment handling
  */
 
-function createComment(x,y) {
+function createComment(comment, user, postId) {
+	console.log("createComment")
+	var comment = $("<div></div>").addClass("comment-row")
+		.append("<span>"+comment+"</span>")
+		.append("<span>"+user+"</span>");
+	console.log($("#comment-plugin-"+postId+" .comment-comments"));
+	$("#comment-plugin-"+postId+" .comment-comments").append(comment);
+}
 
+function submitComment(comment, user, postId) {
+	$.post(backendUrl+"api/comment/", {
+		username: user,
+		comment: comment,
+		postId: postId
+	})
 }
 
 /*
