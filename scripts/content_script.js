@@ -7,7 +7,9 @@ var backendUrl = "https://dry-brook-1207.herokuapp.com/"
  var socket = io.connect(backendUrl);
 
 // Listeners
-socket.join(window.location.href);
+socket.on("connect", function() {
+	socket.emit("joinRoom", { url: window.location.href });
+})
 socket.on("NewPostItCreated", function(data) {
 	createPostIt(data.newPostIt.domElement, data.postId);
 })
@@ -77,7 +79,7 @@ $(window).resize(function() {
  */
 
 function createComment(x,y) {
-	
+
 }
 
 /*
