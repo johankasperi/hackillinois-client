@@ -1,34 +1,77 @@
 var backendUrl = "https://dry-brook-1207.herokuapp.com/"
 
 /*
+ * Auth
+ */
+
+var currentUser = null;
+function handleAuth(authToken, uid) {
+	if(uid !== null) {
+		$.get(backendUrl+"api/users/"+uid, function(){})
+		.done(function(data){
+			currentUser = data;
+			console.log(currentUser);
+			init(currentUser);
+		})
+		.fail(function(err) {
+			chrome.storage.local.remove(['firebaseAuthToken', 'firebaseUid']);
+			chrome.runtime.sendMessage({
+				type: "open-tab",
+				url: backendUrl+"login"
+			}, function(response) {
+				console.log(response.farewell);
+			})
+		})
+	}
+	else {
+		chrome.storage.local.remove(['firebaseAuthToken', 'firebaseUid']);
+		chrome.runtime.sendMessage({
+			type: "open-tab",
+			url: backendUrl+"login"
+		}, function(response) {
+			console.log(response.farewell);
+		})
+	}
+}
+
+chrome.storage.local.get(['firebaseAuthToken', 'firebaseUid'], function(items) {
+	var authToken = items.firebaseAuthToken || null;
+	var uid = items.firebaseUid || null;
+	handleAuth(authToken, uid);
+});
+/*
  * Socket io
  */
 
- var socket = io.connect(backendUrl);
+var socket = io.connect(backendUrl);
 
 // Listeners
-socket.on("connect", function() {
-	socket.emit("joinRoom", { url: window.location.href });
+function initSocket() {
+	socket.on("connect", function() {
+		socket.emit("joinRoom", { url: window.location.href });
 
-	socket.on("NewPostItCreated", function(data) {
-		createPostIt(data);
+		socket.on("NewPostItCreated", function(data) {
+			createPostIt(data);
+		})
+		socket.on("NewCommentCreated", function(data) {
+			createComment(data.comment.comment, data.comment.username, data.comment.date, data.postId);
+		})
 	})
-	socket.on("NewCommentCreated", function(data) {
-		createComment(data.comment.comment, data.comment.username, data.comment.date, data.postId);
-	})
-})
+}
+
 
 /*
  * Get all postits when entering url
  */
 
-$(window).load(function() {
+function getAllPostIts() {
 	$.get(backendUrl+"api/post-it", { url: window.location.href }, function(data) {
 		$.each(data, function(i, data) {
 			createPostIt(data);
 		});
 	});
-});
+}
+
 
 /*
  * Creation of postit
@@ -76,15 +119,17 @@ function createPostIt(post) {
 }
 
 // Move postits on window resize
-$(window).resize(function() {
-	$.each(posts, function(index, obj) {
-		var offset = $(obj.domElement).offset();
-		$("#comment-plugin-"+obj.postId).css({
-			top: offset.top,
-			left: offset.left
+function windowResize() {
+	$(window).resize(function() {
+		$.each(posts, function(index, obj) {
+			var offset = $(obj.domElement).offset();
+			$("#comment-plugin-"+obj.postId).css({
+				top: offset.top,
+				left: offset.left
+			})
 		})
 	})
-})
+}
 
 /*
  * Comment handling
@@ -111,15 +156,25 @@ function submitComment(comment, user, postId) {
  * Right-click events
  */
 $(document).on("contextmenu", function(e) {
-	getDom(e.target, "", function(domElement) {
+	if(currentUser == null) {
 		chrome.runtime.sendMessage({
-			type: "click",
-			domElement: domElement.trim()
+			type: "click-without-login"
 		}, function(response) {
 			console.log(response.farewell);
 		})
-	});
+	}
+	else {
+		getDom(e.target, "", function(domElement) {
+			chrome.runtime.sendMessage({
+				type: "click",
+				domElement: domElement
+			}, function(response) {
+				console.log(response.farewell);
+			})
+		});
+	}
 })
+
 
 function getDom(element, domElement, callback) {
 	if($(element).attr("id")) {
@@ -132,8 +187,13 @@ function getDom(element, domElement, callback) {
 }
 
 /*
- * Listen on the background.js
+ * Init
  */
-chrome.runtime.onMessage.addListener(function(message) {
-
-})
+function init() {
+	if(currentUser == null) {
+		return;
+	}
+	getAllPostIts();
+	windowResize();
+	initSocket();
+}

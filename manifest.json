@@ -1,20 +1,31 @@
 {
   "name": "Comment this",
   "description": "Comment anything on the Internet.",
-  "version": "0.0.1",
+  "version": "0.0.2",
+
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+NnofsZsnI4dKmJHT2cA6mhs7jRMZVyLrktDHJGEoZVZuNQzQKQcWi7EBMbIqzqe7H6t3Y3KCm6i9Exztgos4mkZBm5Kk7v5OCQSlR1ASrgWISv4fojnY5Y19E6xtwU3NOG8GOmexZ8/qE25it68ly9hcLjrYGT/JbxE+f8LgfaQI92mtoGtK+VlPnnC8ty5fQoSeVlZjmZCpXHnwcLcXRpdvFBJxHfJU+eh+GHBnTnX1w4zgcJlP8G0qJWaKE/kxC6HjflQR8e2FANTDlKLVafXw55AR1jDYCzWjP2n8/HN5HkeDX4BEkT0JrEPffT/zVu3feiTbN+bZV5/Of6UTQIDAQAB",
+
   "permissions": [
+    "identity",
     "contextMenus",
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "background": {
     "persistent": false,
     "scripts": ["scripts/jquery.min.js", "scripts/background.js"]
   },
-  "content_scripts": [{
-    "matches":["http://*/*","https://*/*"],
-    "css": ["css/style.css"],
-    "js": ["scripts/socket.io-1.3.4.js", "scripts/jquery.min.js", "scripts/jquery.timeago.js", "scripts/content_script.js"],
-    "run_at": "document_end"
-  }],
+  "content_scripts": [
+    {
+      "matches":["http://*/*"],
+      "css": ["css/style.css"],
+      "js": ["scripts/socket.io-1.3.4.js", "scripts/jquery.min.js", "scripts/jquery.timeago.js", "scripts/content_script.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["https://dry-brook-1207.herokuapp.com/login"],
+      "js": ["scripts/auth.js", "scripts/jquery.min.js"]
+    }
+  ],
   "manifest_version": 2
 }

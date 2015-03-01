@@ -4,6 +4,7 @@ var backendUrl = 'https://dry-brook-1207.herokuapp.com/'
  * Right-click function to create new post-it
  */
 var clickedElement = null;
+var clickedWithoutLogin = false;
 
 // Contextmenus listeners and functions
 chrome.runtime.onInstalled.addListener(function() {
@@ -19,31 +20,31 @@ chrome.runtime.onInstalled.addListener(function() {
 chrome.contextMenus.onClicked.addListener(onClickHandler);
 
 function onClickHandler(info, tab) {
+  if(clickedWithoutLogin == true) {
+    chrome.tabs.create({url: backendUrl+"login"});
+    return;
+  }
   chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
-    console.log("hej")
     createPostIt({
       dom: clickedElement,
       url: tabs[0].url,
     });
   });
-  sendPostIt(clickedElement);
 };
 
 // Listen on the right-click event from rightclick.js
 chrome.runtime.onMessage.addListener(function(message) {
   if(message.type == "click") {
+    clickedWithoutLogin = false;
     clickedElement = message.domElement;
   }
+  else if(message.type == "click-without-login") {
+    clickedWithoutLogin = true;
+  }
+  else if(message.type == "open-tab") {
+    chrome.tabs.create({url: message.url});
+  }
 })
-
-// Send the new post-it domElement to create_postit.js
-function sendPostIt(domElement) {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, {type: "create-postit", domElement: domElement}, function(response) {
-      
-    });
-  });
-}
 
 // Talk with the api
 
