@@ -9,12 +9,11 @@ var backendUrl = "https://dry-brook-1207.herokuapp.com/"
 // Listeners
 socket.on("connect", function() {
 	socket.emit("joinRoom", { url: window.location.href });
+
 	socket.on("NewPostItCreated", function(data) {
-		console.log("apppa");
-		createPostIt(data.newPostIt.domElement, data.postId);
+		createPostIt(data);
 	})
 	socket.on("NewCommentCreated", function(data) {
-		console.log("aoid")
 		createComment(data.comment.comment, data.comment.username, data.postId);
 	})
 })
@@ -25,8 +24,8 @@ socket.on("connect", function() {
 
 $(window).load(function() {
 	$.get(backendUrl+"api/post-it", { url: window.location.href }, function(data) {
-		$.each(data, function(i, obj) {
-			createPostIt(obj.domElement, obj.id);
+		$.each(data, function(i, data) {
+			createPostIt(data);
 		});
 	});
 });
@@ -38,14 +37,9 @@ $(window).load(function() {
 var posts = []; // array to save all postits at certain url
 
 // Create the postit at the position of the clicked element
-function createPostIt(domElement, id) {
-	var post = {
-  		id: id,
-  		domElement: domElement,
-  	};
+function createPostIt(post) {
   	posts.push(post);
-	
-	var offset = $(post.domElement).offset();
+	var offset = $(post.post.domElement).offset();
 	var domId = "comment-plugin-"+post.id;
 	var wrapper = $("<div></div>").attr("id", domId).addClass("comment-plugin").css({
 		position: "absolute",
@@ -73,13 +67,19 @@ function createPostIt(domElement, id) {
 		$("#" + domId + " .input-user").val('');
 		submitComment(comment, user, post.id);
 	});
+
+	if(post.post.comments) {
+		$.each(post.post.comments, function(i, comment) {
+			createComment(comment.comment, comment.username, post.id);
+		})
+	}
 }
 
 // Move postits on window resize
 $(window).resize(function() {
 	$.each(posts, function(index, obj) {
 		var offset = $(obj.domElement).offset();
-		$("#comment-plugin-"+obj.id).css({
+		$("#comment-plugin-"+obj.postId).css({
 			top: offset.top,
 			left: offset.left
 		})
