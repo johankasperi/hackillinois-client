@@ -9,13 +9,14 @@ var backendUrl = "https://dry-brook-1207.herokuapp.com/"
 // Listeners
 socket.on("connect", function() {
 	socket.emit("joinRoom", { url: window.location.href });
-})
-socket.on("NewPostItCreated", function(data) {
-	createPostIt(data.newPostIt.domElement, data.postId);
-})
-socket.on("NewCommentCreated", function(data) {
-	console.log("aoid")
-	createComment(data.newComment, data.postId);
+	socket.on("NewPostItCreated", function(data) {
+		console.log("apppa");
+		createPostIt(data.newPostIt.domElement, data.postId);
+	})
+	socket.on("NewCommentCreated", function(data) {
+		console.log("aoid")
+		createComment(data.comment.comment, data.comment.username, data.postId);
+	})
 })
 
 /*
@@ -70,7 +71,6 @@ function createPostIt(domElement, id) {
 		$("#" + domId + " .input-comment").val('');
 		var user = $("#" + domId + " .input-user").val();
 		$("#" + domId + " .input-user").val('');
-		createComment(comment, user, post.id);
 		submitComment(comment, user, post.id);
 	});
 }
@@ -135,7 +135,5 @@ function getDom(element, domElement, callback) {
  * Listen on the background.js
  */
 chrome.runtime.onMessage.addListener(function(message) {
-  if(message.type == "create-postit") {
-    //createPostIt(message.domElement);
-  }
+
 })
