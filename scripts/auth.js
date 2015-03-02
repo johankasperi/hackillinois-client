@@ -1,10 +1,13 @@
 var firebaseAuthToken = "";
 var firebaseUid = "";
 var intervalId = null;
+
 var checker = function() {
   firebaseAuthToken = $('#firebaseAuthToken').text();
   firebaseUid = $('#firebaseUid').text();
   console.log("checker");
+  console.log("hej")
+  console.log(firebaseAuthToken)
   if(firebaseAuthToken != '') {
     console.log('set to local storage', {firebaseAuthToken: firebaseAuthToken, firebaseUid: firebaseUid});
     chrome.storage.local.set({firebaseAuthToken: firebaseAuthToken, firebaseUid: firebaseUid, });
@@ -12,4 +15,6 @@ var checker = function() {
   }
 };
 
-intervalId = setTimeout(checker, 100);
+
+
+intervalId = setTimeout(checker, 1000);

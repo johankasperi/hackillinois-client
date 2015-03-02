@@ -1,4 +1,4 @@
-var backendUrl = "https://dry-brook-1207.herokuapp.com/"
+var backendUrl = "http://localhost:8080/"
 
 /*
  * Auth
@@ -7,7 +7,8 @@ var backendUrl = "https://dry-brook-1207.herokuapp.com/"
 var currentUser = null;
 
 function handleAuth(authToken, uid) {
-	if(uid !== null) {
+	console.log(uid)
+	if(uid !== null && uid !== '') {
 		$.get(backendUrl+"api/users/"+uid, function(){})
 		.done(function(data){
 			currentUser = data;

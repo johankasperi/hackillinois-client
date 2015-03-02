@@ -1,4 +1,4 @@
-var backendUrl = 'https://dry-brook-1207.herokuapp.com/'
+var backendUrl = 'http://localhost:8080/'
 var userGroups = []
 
 /*
